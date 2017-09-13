@@ -4,7 +4,7 @@
 #include <iostream>
 #include "Factory.hpp"
 
-class BaseClass {
+class BaseClass : public stringable {
 public:
 	virtual const std::string toString() const = 0;
 };
@@ -16,6 +16,9 @@ public:
 		return std::string("DeliverClass");
 	}
 };
+
+const char* DeliverClass::className = "DeliverClass";
+
 class AnotherClass {
 public:
 	const std::string toString() const {
@@ -27,7 +30,7 @@ int main()
 {
 	Factory<BaseClass> newFactory;
 
-	newFactory.addFactorer<DeliverClass>("DeliverClass");
+	newFactory.addFactorer<DeliverClass>();
 	
 	//Static assert will give an error
 	//newFactory.addFactorer<AnotherClass>();

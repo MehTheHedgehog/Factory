@@ -6,16 +6,23 @@
 #include <map>
 #include <functional>
 
+class stringable {
+public:
+	const static char* className;
+};
+
 template<class BaseClass>
 class Factory {
+	static_assert(std::is_base_of<stringable, BaseClass>::value, "Your Base Class need to be stringable (implement toString function)");
+
 	private:
 		std::map<std::string, std::function<std::unique_ptr<BaseClass>()>> functionMap;
 	public:
 		template <class Templater>
-		void addFactorer(std::string className) {
+		void addFactorer() {
 			static_assert(std::is_base_of<BaseClass, Templater>::value, "Given Class is not child of the factor BaseClass");
 
-			auto funcMake = std::make_pair(className, []() {
+			auto funcMake = std::make_pair(Templater::className, []() {
 				return std::make_unique<Templater>(Templater());
 			});
 			functionMap.insert(funcMake);
