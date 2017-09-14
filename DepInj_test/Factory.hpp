@@ -1,44 +1,79 @@
 #ifndef FACTORY_HPP
 #define FACTORY_HPP
 
+#if _HAS_CXX17
+	#include <optional>
+#endif /* _HAS_CXX17 */
+
 #include <memory>
 #include <string>
 #include <map>
 #include <functional>
 
-class stringable {
-public:
-	const static char* className;
-};
+namespace meh {
+namespace utils {
 
-template<class BaseClass>
-class Factory {
-	static_assert(std::is_base_of<stringable, BaseClass>::value, "Your Base Class need to be stringable (implement toString function)");
-
+	template<class BaseClass>
+	class Factory {
 	private:
 		std::map<std::string, std::function<std::unique_ptr<BaseClass>()>> functionMap;
-	public:
-		template <class Templater>
-		void addFactorer() {
-			static_assert(std::is_base_of<BaseClass, Templater>::value, "Given Class is not child of the factor BaseClass");
 
-			auto funcMake = std::make_pair(Templater::className, []() {
-				return std::make_unique<Templater>(Templater());
-			});
-			functionMap.insert(funcMake);
+		//Function to extract class name from typeid().name()
+		//Visual Studio make name of typeid as "class classname" 
+		//We need to extract only classname from it
+		template<class Derived>
+		const static std::string makeName() {
+			return std::string(std::string(typeid(Derived).name()), std::string(typeid(Derived).name()).find("class ") + std::strlen("class "));
+		}
+ 
+	public:
+
+		//Add class to map of builders
+		template <class Derived>
+		void addFacturer(const std::string& className = makeName<Derived>(), std::function<std::unique_ptr<BaseClass>()> factorFunc = []() {
+			static_assert(std::is_base_of<BaseClass, Derived>::value, "Derived is not child of the factor BaseClass");
+			return std::make_unique<Derived>();
+		}) {
+			static_assert(std::is_base_of<BaseClass, Derived>::value, "Derived is not child of the factor BaseClass");
+
+			functionMap.insert(std::make_pair(className, factorFunc));
 		}
 
-		std::unique_ptr<BaseClass> factorClass(std::string className) {
+		//Return class instance of corresponding name
+		#if _HAS_CXX17
+			std::optional<std::unique_ptr<BaseClass>>
+		#else
+			std::unique_ptr<BaseClass>
+		#endif /* _HAS_CXX17 */
+		factorClass(const std::string& className) {
 			try {
-				return functionMap[className]();
-			}catch (...) {
-				return nullptr;
+				return functionMap.at(className)();
+			}
+			catch (const std::out_of_range& exc) {
+				if (_HAS_CXX17) 
+					throw exc;
+				else
+					return nullptr;
 			}
 		}
 
+		//Make class instance without need to register class
+		template<typename Derived>
+		#if _HAS_CXX17
+			std::optional<std::unique_ptr<BaseClass>> factorClass() {
+		#else
+			std::unique_ptr<BaseClass> factorClass() {
+		#endif /* _HAS_CXX17 */
+			static_assert(std::is_base_of<BaseClass, Derived>::value, "Derived is not child of the factor BaseClass");
+			return std::make_unique<Derived>();
+		}
+
+	};
+
+}
+}
 
 
-};
 
 #endif // !FACTORY_HPP
 
