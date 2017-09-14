@@ -1,16 +1,6 @@
 #pragma once
 
-#if _cplusplus > 201402L
-	#ifndef _MEH_SUPPRESS_CPP17_FEATURES
-		#define _MEH_USE_CPP17_FEATURES
-	#endif
-#endif // _HAS_CXX17
-
-
-#ifdef _MEH_USE_CPP17_FEATURES
-	#include <optional>
-#endif /* _MEH_USE_CPP17_FEATURES */
-
+#include <optional>
 #include <vector>
 #include <memory>
 #include <string>
@@ -47,12 +37,7 @@ namespace utils {
 		}
 
 		//Return class instance of corresponding name
-		#ifdef _MEH_USE_CPP17_FEATURES
-			std::optional<std::unique_ptr<BaseClass>>
-		#else
-			std::unique_ptr<BaseClass>
-		#endif /* _MEH_USE_CPP17_FEATURES */
-		factorClass(const std::string& className) {
+		std::optional<std::unique_ptr<BaseClass>> factorClass(const std::string& className) {
 			try {
 				return factorMap.at(className)();
 			}
@@ -62,12 +47,8 @@ namespace utils {
 		}
 
 		//Make class instance without need to register class
-		template<typename Derived>
-		#ifdef _MEH_USE_CPP17_FEATURES
-			std::optional<std::unique_ptr<BaseClass>> factorClass() {
-		#else
-			std::unique_ptr<BaseClass> factorClass() {
-		#endif /* _MEH_USE_CPP17_FEATURES */
+		template<typename Derived> 
+		std::optional<std::unique_ptr<BaseClass>> factorClass() {
 			static_assert(std::is_base_of<BaseClass, Derived>::value, "Derived is not child of the factor BaseClass");
 			return std::make_unique<Derived>();
 		}
