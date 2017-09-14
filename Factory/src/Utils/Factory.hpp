@@ -1,10 +1,17 @@
-#ifndef FACTORY_HPP
-#define FACTORY_HPP
+#pragma once
 
-#if _HAS_CXX17
+#if _cplusplus > 201402L
+	#ifndef _MEH_SUPPRESS_CPP17_FEATURES
+		#define _MEH_USE_CPP17_FEATURES
+	#endif
+#endif // _HAS_CXX17
+
+
+#ifdef _MEH_USE_CPP17_FEATURES
 	#include <optional>
-#endif /* _HAS_CXX17 */
+#endif /* _MEH_USE_CPP17_FEATURES */
 
+#include <vector>
 #include <memory>
 #include <string>
 #include <map>
@@ -13,10 +20,10 @@
 namespace meh {
 namespace utils {
 
-	template<class BaseClass>
+	template<typename BaseClass>
 	class Factory {
 	private:
-		std::map<std::string, std::function<std::unique_ptr<BaseClass>()>> functionMap;
+		std::map<std::string, std::function<std::unique_ptr<BaseClass>()>> factorMap;
 
 		//Function to extract class name from typeid().name()
 		//Visual Studio make name of typeid as "class classname" 
@@ -36,46 +43,59 @@ namespace utils {
 		}) {
 			static_assert(std::is_base_of<BaseClass, Derived>::value, "Derived is not child of the factor BaseClass");
 
-			functionMap.insert(std::make_pair(className, factorFunc));
+			factorMap.insert(std::make_pair(className, factorFunc));
 		}
 
 		//Return class instance of corresponding name
-		#if _HAS_CXX17
+		#ifdef _MEH_USE_CPP17_FEATURES
 			std::optional<std::unique_ptr<BaseClass>>
 		#else
 			std::unique_ptr<BaseClass>
-		#endif /* _HAS_CXX17 */
+		#endif /* _MEH_USE_CPP17_FEATURES */
 		factorClass(const std::string& className) {
 			try {
-				return functionMap.at(className)();
+				return factorMap.at(className)();
 			}
-			catch (const std::out_of_range& exc) {
-				if (_HAS_CXX17) 
-					throw exc;
-				else
-					return nullptr;
+			catch (const std::out_of_range&) {
+					return std::optional<std::unique_ptr<BaseClass>>();
 			}
 		}
 
 		//Make class instance without need to register class
 		template<typename Derived>
-		#if _HAS_CXX17
+		#ifdef _MEH_USE_CPP17_FEATURES
 			std::optional<std::unique_ptr<BaseClass>> factorClass() {
 		#else
 			std::unique_ptr<BaseClass> factorClass() {
-		#endif /* _HAS_CXX17 */
+		#endif /* _MEH_USE_CPP17_FEATURES */
 			static_assert(std::is_base_of<BaseClass, Derived>::value, "Derived is not child of the factor BaseClass");
 			return std::make_unique<Derived>();
+		}
+
+		//Access to Factory elements
+
+		std::vector<std::string> getCurrentFactorList() const {
+			std::vector<std::string> vectorKey;
+
+			for (const auto& funcPair : factorMap)
+				vectorKey.push_back(funcPair.first);
+
+			return vectorKey;
+		}
+
+		void erase(const std::string& className) {
+			factorMap.erase(factorMap.find(className));
+		}
+
+		std::size_t size() const {
+			return factorMap.size();
+		}
+
+		bool empty() const {
+			return size() == 0;
 		}
 
 	};
 
 }
 }
-
-
-
-#endif // !FACTORY_HPP
-
-
-#pragma once
