@@ -28,7 +28,7 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{33BE0313-1F0E-48CF-BCC7-7BC8815610AC}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>DepInj_test</RootNamespace>
+    <RootNamespace>Factory</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
     <ProjectName>Factory</ProjectName>
   </PropertyGroup>
