@@ -1,4 +1,4 @@
-# Chiper8
+# Factory
 _Under construction_
 
 [![Build status](https://ci.appveyor.com/api/projects/status/nwgue6qluflm74as?svg=true)](https://ci.appveyor.com/project/MehTheHedgehog/factory)
