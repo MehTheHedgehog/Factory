@@ -1,25 +1,24 @@
 version: '{branch} 0.0.{build}a'
-
 pull_requests:
   do_not_increment_build_number: true
-
 image: Visual Studio 2017
-
 configuration: Debug
-
 platform:
-  - Win32
-  - x64
-
+- Win32
+- x64
 build:
   parallel: true
   verbosity: minimal
-
 test_script:
-  - ps: >-
+- ps: >-
     Set-Location -Path .\$($env:PLATFORM)\$($env:CONFIGURATION)
+
     Start-Process -FilePath ".\Factory.exe" -ArgumentList "-r junit -o .\junit-result.xml" -Wait
 
+
     # upload results to AppVeyor
+
     $wc = New-Object 'System.Net.WebClient'
-    $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)"
+
+    $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\junit-result.xml))
+deploy: off
